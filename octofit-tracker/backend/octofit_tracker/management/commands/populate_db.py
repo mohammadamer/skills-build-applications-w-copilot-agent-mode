@@ -1,34 +1,68 @@
 from django.core.management.base import BaseCommand
 from octofit_tracker.models import User, Team, Activity, Leaderboard, Workout
-from datetime import datetime
+from django.conf import settings
+from pymongo import MongoClient
+from datetime import timedelta
+from bson import ObjectId
 
 class Command(BaseCommand):
-    help = 'Populate the octofit_db database with test data.'
+    help = 'Populate the database with test data for users, teams, activity, leaderboard, and workouts'
 
     def handle(self, *args, **kwargs):
-        # Users
-        user1 = User.objects.create(email='alice@example.com', name='Alice', password='alicepass')
-        user2 = User.objects.create(email='bob@example.com', name='Bob', password='bobpass')
-        user3 = User.objects.create(email='carol@example.com', name='Carol', password='carolpass')
+        # Connect to MongoDB
+        client = MongoClient(settings.DATABASES['default']['CLIENT']['host'], settings.DATABASES['default']['CLIENT']['port'])
+        db = client[settings.DATABASES['default']['NAME']]
 
-        # Teams
-        team1 = Team.objects.create(name='Team Alpha')
-        team2 = Team.objects.create(name='Team Beta')
-        team1.members.set([user1, user2])
-        team2.members.set([user3])
+        # Drop existing collections
+        db.users.drop()
+        db.teams.drop()
+        db.activity.drop()
+        db.leaderboard.drop()
+        db.workouts.drop()
 
-        # Activities
-        Activity.objects.create(user=user1, activity_type='run', duration=30, date=datetime(2025, 4, 1, 8, 0))
-        Activity.objects.create(user=user2, activity_type='walk', duration=45, date=datetime(2025, 4, 2, 9, 0))
-        Activity.objects.create(user=user3, activity_type='cycle', duration=60, date=datetime(2025, 4, 3, 10, 0))
+        # Create users
+        users = [
+            {"_id": ObjectId(), "username": 'thundergod', "email": 'thundergod@mhigh.edu', "password": 'thundergodpassword'},
+            {"_id": ObjectId(), "username": 'metalgeek', "email": 'metalgeek@mhigh.edu', "password": 'metalgeekpassword'},
+            {"_id": ObjectId(), "username": 'zerocool', "email": 'zerocool@mhigh.edu', "password": 'zerocoolpassword'},
+            {"_id": ObjectId(), "username": 'crashoverride', "email": 'crashoverride@hmhigh.edu', "password": 'crashoverridepassword'},
+            {"_id": ObjectId(), "username": 'sleeptoken', "email": 'sleeptoken@mhigh.edu', "password": 'sleeptokenpassword'},
+        ]
+        db.users.insert_many(users)
 
-        # Workouts
-        Workout.objects.create(name='Pushups', description='Do 20 pushups')
-        Workout.objects.create(name='Situps', description='Do 30 situps')
-        Workout.objects.create(name='Squats', description='Do 40 squats')
+        # Create teams
+        blue_team = {"_id": ObjectId(), "name": 'Blue Team', "members": [users[0]["_id"], users[1]["_id"], users[2]["_id"]]}
+        gold_team = {"_id": ObjectId(), "name": 'Gold Team', "members": [users[3]["_id"], users[4]["_id"]]}
+        db.teams.insert_many([blue_team, gold_team])
 
-        # Leaderboard
-        Leaderboard.objects.create(team=team1, points=150)
-        Leaderboard.objects.create(team=team2, points=100)
+        # Create activities
+        activities = [
+            {"_id": ObjectId(), "user": users[0]["_id"], "activity_type": 'Cycling', "duration": 60},
+            {"_id": ObjectId(), "user": users[1]["_id"], "activity_type": 'Crossfit', "duration": 120},
+            {"_id": ObjectId(), "user": users[2]["_id"], "activity_type": 'Running', "duration": 90},
+            {"_id": ObjectId(), "user": users[3]["_id"], "activity_type": 'Strength', "duration": 30},
+            {"_id": ObjectId(), "user": users[4]["_id"], "activity_type": 'Swimming', "duration": 75},
+        ]
+        db.activity.insert_many(activities)
 
-        self.stdout.write(self.style.SUCCESS('Test data populated successfully.'))
+        # Create leaderboard entries
+        leaderboard_entries = [
+            {"_id": ObjectId(), "user": users[0]["_id"], "score": 100},
+            {"_id": ObjectId(), "user": users[1]["_id"], "score": 90},
+            {"_id": ObjectId(), "user": users[2]["_id"], "score": 95},
+            {"_id": ObjectId(), "user": users[3]["_id"], "score": 85},
+            {"_id": ObjectId(), "user": users[4]["_id"], "score": 80},
+        ]
+        db.leaderboard.insert_many(leaderboard_entries)
+
+        # Create workouts
+        workouts = [
+            {"_id": ObjectId(), "name": 'Cycling Training', "description": 'Training for a road cycling event'},
+            {"_id": ObjectId(), "name": 'Crossfit', "description": 'Training for a crossfit competition'},
+            {"_id": ObjectId(), "name": 'Running Training', "description": 'Training for a marathon'},
+            {"_id": ObjectId(), "name": 'Strength Training', "description": 'Training for strength'},
+            {"_id": ObjectId(), "name": 'Swimming Training', "description": 'Training for a swimming competition'},
+        ]
+        db.workouts.insert_many(workouts)
+
+        self.stdout.write(self.style.SUCCESS('Successfully populated the database with test data.'))
