@@ -1,6 +1,11 @@
+
 from rest_framework import viewsets
 from .models import User, Team, Activity, Leaderboard, Workout
 from .serializers import UserSerializer, TeamSerializer, ActivitySerializer, LeaderboardSerializer, WorkoutSerializer
+from django.conf import settings
+
+# Use the codespace Django REST API endpoint suffix if needed
+DJANGO_CODESPACE_API_SUFFIX = getattr(settings, 'DJANGO_CODESPACE_API_SUFFIX', '/api/')
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
