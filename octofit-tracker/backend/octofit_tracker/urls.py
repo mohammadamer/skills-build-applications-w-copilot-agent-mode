@@ -31,12 +31,21 @@ router.register(r'workouts', views.WorkoutViewSet)
 
 @api_view(['GET'])
 def api_root(request, format=None):
+    # Use codespace URL for API root links to avoid HTTPS certificate issues
+    codespace_url = 'https://studious-space-robot-wrpjp5ggjgj39xrv-8000.app.github.dev'
+    host = request.get_host()
+    if host.startswith('localhost') or host.startswith('127.0.0.1'):
+        base_url = f'http://{host}'
+    elif host.endswith('.app.github.dev'):
+        base_url = f'https://{host}'
+    else:
+        base_url = codespace_url
     return Response({
-        'users': reverse('user-list', request=request, format=format),
-        'teams': reverse('team-list', request=request, format=format),
-        'activity': reverse('activity-list', request=request, format=format),
-        'leaderboard': reverse('leaderboard-list', request=request, format=format),
-        'workouts': reverse('workout-list', request=request, format=format),
+        'users': base_url + reverse('user-list', request=request, format=format),
+        'teams': base_url + reverse('team-list', request=request, format=format),
+        'activity': base_url + reverse('activity-list', request=request, format=format),
+        'leaderboard': base_url + reverse('leaderboard-list', request=request, format=format),
+        'workouts': base_url + reverse('workout-list', request=request, format=format),
     })
 
 urlpatterns = [
