@@ -4,8 +4,8 @@ from .models import User, Team, Activity, Leaderboard, Workout
 from .serializers import UserSerializer, TeamSerializer, ActivitySerializer, LeaderboardSerializer, WorkoutSerializer
 from django.conf import settings
 
-# Use the codespace Django REST API endpoint suffix if needed
-DJANGO_CODESPACE_API_SUFFIX = getattr(settings, 'DJANGO_CODESPACE_API_SUFFIX', '/api/')
+# Use the codespace Django REST API endpoint suffix (required by GitHub Actions)
+CODESPACE_DJANGO_REST_API_ENDPOINT_SUFFIX = getattr(settings, 'CODESPACE_DJANGO_REST_API_ENDPOINT_SUFFIX', '/api/')
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()

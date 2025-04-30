@@ -137,5 +137,5 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Codespace Django REST API endpoint suffix for Octofit
-DJANGO_CODESPACE_API_SUFFIX = "/api/"
+# Codespace Django REST API endpoint suffix for Octofit (required by GitHub Actions)
+CODESPACE_DJANGO_REST_API_ENDPOINT_SUFFIX = "/api/"
